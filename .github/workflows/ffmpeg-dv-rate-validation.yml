@@ -1,0 +1,45 @@
+name: FFmpeg DV average-frame-rate validation
+
+on:
+  push:
+    branches:
+      - test/ffmpeg-dv-avg-frame-rate-20260726
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  targeted:
+    name: targeted-${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: master-d09db42
+            ref: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
+          - label: ffmpeg-8.1.2
+            ref: n8.1.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config python3
+      - name: Build, patch, and validate
+        env:
+          FFMPEG_LABEL: ${{ matrix.label }}
+          FFMPEG_REF: ${{ matrix.ref }}
+        run: |
+          chmod +x ffmpeg-dv-rate-validation.sh
+          ./ffmpeg-dv-rate-validation.sh
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-dv-validation-${{ matrix.label }}
+          path: artifacts/${{ matrix.label }}
+          if-no-files-found: warn
+          retention-days: 30
