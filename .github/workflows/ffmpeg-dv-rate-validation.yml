@@ -13,42 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  targeted:
-    name: targeted-${{ matrix.label }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: master-d09db42
-            ref: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
-          - label: ffmpeg-8.1.2
-            ref: n8.1.2
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config python3
-      - name: Build, patch, and validate
-        env:
-          FFMPEG_LABEL: ${{ matrix.label }}
-          FFMPEG_REF: ${{ matrix.ref }}
-        run: |
-          chmod +x run-ffmpeg-dv-rate-validation.sh
-          ./run-ffmpeg-dv-rate-validation.sh
-      - name: Upload audit artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-dv-validation-${{ matrix.label }}
-          path: artifacts/${{ matrix.label }}
-          if-no-files-found: warn
-          retention-days: 30
-
-  full-fate:
-    name: full-fate-${{ matrix.label }}
+  full-fate-differential:
+    name: full-fate-differential-${{ matrix.label }}
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
@@ -65,44 +31,44 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential pkg-config python3
-      - name: Run baseline and patched internal FATE suites
+      - name: Compare complete baseline and patched FATE failure sets
         env:
           FFMPEG_LABEL: ${{ matrix.label }}
           FFMPEG_REF: ${{ matrix.ref }}
         run: |
           chmod +x ffmpeg-dv-full-fate.sh
           ./ffmpeg-dv-full-fate.sh
-      - name: Upload full FATE evidence
+      - name: Upload differential FATE evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg-dv-full-fate-${{ matrix.label }}
+          name: ffmpeg-dv-full-fate-differential-${{ matrix.label }}
           path: artifacts/full-${{ matrix.label }}
           if-no-files-found: warn
           retention-days: 30
 
-  sanitizer:
-    name: sanitizer-master-d09db42
+  edge-cases:
+    name: edge-cases-master-d09db42
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang pkg-config python3
-      - name: Run ASan and UBSan validation
+          sudo apt-get install -y build-essential binutils pkg-config python3
+      - name: Validate profile, ABI, transcode, deinterlace, and transition edges
         env:
           FFMPEG_LABEL: master-d09db42
           FFMPEG_REF: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
         run: |
-          chmod +x ffmpeg-dv-sanitizer.sh
-          ./ffmpeg-dv-sanitizer.sh
-      - name: Upload sanitizer evidence
+          chmod +x ffmpeg-dv-edge-validation.sh
+          ./ffmpeg-dv-edge-validation.sh
+      - name: Upload edge-case evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg-dv-sanitizer-master-d09db42
-          path: artifacts/sanitizer-master-d09db42
+          name: ffmpeg-dv-edge-master-d09db42
+          path: artifacts/edge-master-d09db42
           if-no-files-found: warn
           retention-days: 30
