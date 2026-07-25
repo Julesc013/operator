@@ -35,7 +35,7 @@ p=Path('tests/fate/lavf-container.mak')
 s=p.read_text()
 old='''fate-lavf-dv_pal:  CMD = lavf_container_timecode_nodrop "-af aresample=48000:tsf=s16p -r 25 -s pal -ac 2 -f dv"\nfate-lavf-dv_ntsc:  CMD = lavf_container_timecode_drop "-af aresample=48000:tsf=s16p -pix_fmt yuv411p -s ntsc -ac 2 -f dv"'''
 probe='-v error -select_streams v:0 -show_entries stream=r_frame_rate,avg_frame_rate,time_base -of default=noprint_wrappers=1'
-new=f'''fate-lavf-dv_pal:  CMD = lavf_container "" "-af aresample=48000:tsf=s16p -r 25 -s pal -ac 2 -f dv -timecode 02:56:14:13" "" "{probe}"\nfate-lavf-dv_ntsc:  CMD = lavf_container "" "-af aresample=48000:tsf=s16p -pix_fmt yuv411p -s ntsc -ac 2 -f dv -timecode 02:56:14.13 -r 30000/1001" "" "{probe}"\nfate-lavf-dv_pal fate-lavf-dv_ntsc: ffprobe$(PROGSUF)$(EXESUF)'''
+new=f'''fate-lavf-dv_pal:  CMD = lavf_container "" "-af aresample=48000:tsf=s16p -r 25 -s pal -ac 2 -f dv -timecode 02:56:14:13" "" "{probe}"\nfate-lavf-dv_ntsc:  CMD = lavf_container "" "-af aresample=48000:tsf=s16p -pix_fmt yuv411p -s ntsc -ac 2 -f dv -timecode 02:56:14.13 -r 30000/1001" "" "{probe}"\nfate-lavf-dv_pal fate-lavf-dv_ntsc: ffprobe$(PROGSSUF)$(EXESUF)'''
 if s.count(old)!=1: raise SystemExit('DV lavf command pair not found exactly once')
 p.write_text(s.replace(old,new,1))
 
