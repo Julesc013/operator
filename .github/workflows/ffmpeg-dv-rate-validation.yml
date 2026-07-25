@@ -72,3 +72,29 @@ jobs:
           path: artifacts/edge-master-d09db42
           if-no-files-found: warn
           retention-days: 30
+
+  upstream-regression-test:
+    name: upstream-regression-test-master-d09db42
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config python3
+      - name: Prove test fails before and passes after the fix
+        env:
+          FFMPEG_LABEL: master-d09db42
+          FFMPEG_REF: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
+        run: |
+          chmod +x ffmpeg-dv-upstream-test-validation.sh
+          ./ffmpeg-dv-upstream-test-validation.sh
+      - name: Upload upstream patch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-dv-upstream-test-master-d09db42
+          path: artifacts/upstream-test-master-d09db42
+          if-no-files-found: warn
+          retention-days: 30
