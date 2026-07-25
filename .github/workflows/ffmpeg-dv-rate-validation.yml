@@ -36,8 +36,8 @@ jobs:
           FFMPEG_LABEL: ${{ matrix.label }}
           FFMPEG_REF: ${{ matrix.ref }}
         run: |
-          chmod +x ffmpeg-dv-rate-validation.sh
-          ./ffmpeg-dv-rate-validation.sh
+          chmod +x run-ffmpeg-dv-rate-validation.sh
+          ./run-ffmpeg-dv-rate-validation.sh
       - name: Upload audit artifacts
         if: always()
         uses: actions/upload-artifact@v4
