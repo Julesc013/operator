@@ -46,3 +46,63 @@ jobs:
           path: artifacts/${{ matrix.label }}
           if-no-files-found: warn
           retention-days: 30
+
+  full-fate:
+    name: full-fate-${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: master-d09db42
+            ref: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
+          - label: ffmpeg-8.1.2
+            ref: n8.1.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config python3
+      - name: Run baseline and patched internal FATE suites
+        env:
+          FFMPEG_LABEL: ${{ matrix.label }}
+          FFMPEG_REF: ${{ matrix.ref }}
+        run: |
+          chmod +x ffmpeg-dv-full-fate.sh
+          ./ffmpeg-dv-full-fate.sh
+      - name: Upload full FATE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-dv-full-fate-${{ matrix.label }}
+          path: artifacts/full-${{ matrix.label }}
+          if-no-files-found: warn
+          retention-days: 30
+
+  sanitizer:
+    name: sanitizer-master-d09db42
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang pkg-config python3
+      - name: Run ASan and UBSan validation
+        env:
+          FFMPEG_LABEL: master-d09db42
+          FFMPEG_REF: d09db42d8f6b1665fb4bdbdd92f78c1e6be908f7
+        run: |
+          chmod +x ffmpeg-dv-sanitizer.sh
+          ./ffmpeg-dv-sanitizer.sh
+      - name: Upload sanitizer evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-dv-sanitizer-master-d09db42
+          path: artifacts/sanitizer-master-d09db42
+          if-no-files-found: warn
+          retention-days: 30
